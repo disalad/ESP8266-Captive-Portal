@@ -143,3 +143,16 @@ input:focus~.input-label {
 .input.invalid {
     border-color: red;
 }
+
+.clear_body {
+    margin-bottom: 2rem;
+}
+
+.clear_body~a {
+    white-space: nowrap;
+}
+
+.clear_body_anchor {
+    margin-top: 4rem;
+    text-align: center;
+}

