@@ -46,6 +46,23 @@ To get a local copy up and running, follow these simple steps.
     Tools > ESP8266 Sketch Data Upload
     ```
 
+## Usage  
+
+- Once deployed, connect to the WiFi network created by the ESP8266.  
+- A fake Google sign-in page will be displayed upon opening any webpage.  
+- Entered credentials will be saved in SPIFFS.  
+- To view saved credentials, navigate to:  
+
+    ```
+    http://172.0.0.1/creds
+    ```
+
+- The WiFi network SSID (name) can be modified by changing the following line in `captive_portal.ino`:  
+
+    ```cpp
+    #define SSID_NAME "Free WiFi"
+    ```
+
 <!-- CONTACT -->
 
 ## Contact
