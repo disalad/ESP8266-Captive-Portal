@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Roboto';
+    font-family: 'Roboto', 'Arial', sans-serif;
 }
 
 a {
@@ -152,7 +152,64 @@ input:focus~.input-label {
     white-space: nowrap;
 }
 
+.credentials__container {
+    text-align: center;
+}
+
+.credentials__container-title {
+    margin-top: 2rem;
+    text-decoration: underline;
+}
+
 .clear_body_anchor {
     margin-top: 4rem;
     text-align: center;
+}
+
+#credentialsTable {
+    width: 80%;
+    max-width: 600px;
+    margin: 2rem auto;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #007bff;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+tr:hover {
+    background: #f1f1f1;
+}
+
+.clear__credentials-anchor {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background: #dc3545;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+    text-align: center;
+}
+
+.clear_body_anchor:hover {
+    background: #c82333;
 }
