@@ -33,6 +33,7 @@ To get a local copy up and running, follow these simple steps.
     ```sh
     git clone https://github.com/disalad/ESP8266-Captive-Portal.git
     ```
+
 2. Open the project in Arduino IDE
 3. Select the correct board and port for your ESP8266 device
 4. Upload the code to your ESP8266
@@ -46,22 +47,28 @@ To get a local copy up and running, follow these simple steps.
     Tools > ESP8266 Sketch Data Upload
     ```
 
-## Usage  
+## Usage
 
-- Once deployed, connect to the WiFi network created by the ESP8266.  
-- A fake Google sign-in page will be displayed upon opening any webpage.  
-- Entered credentials will be saved in SPIFFS.  
-- To view saved credentials, navigate to:  
+-   Once deployed, connect to the WiFi network created by the ESP8266.
+-   A fake Google sign-in page will be displayed upon opening any webpage.
+-   Entered credentials will be saved in SPIFFS.
+-   To view saved credentials, navigate to:
 
     ```
     http://172.0.0.1/creds
     ```
 
-- The WiFi network SSID (name) can be modified by changing the following line in `captive_portal.ino`:  
+-   The WiFi network SSID (name) can be modified by changing the following line in `captive_portal.ino`:
 
     ```cpp
     #define SSID_NAME "Free WiFi"
     ```
+
+<!-- CREDITS -->
+
+## Credits
+
+-   [https://github.com/adamff1/ESP8266-Captive-Portal](https://github.com/adamff1/ESP8266-Captive-Portal)
 
 <!-- CONTACT -->
 
